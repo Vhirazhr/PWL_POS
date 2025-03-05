@@ -21,7 +21,7 @@ class UserController extends Controller{
               UserModel::where('username', 'customer-1')->update($data);
                UserModel::create($data);*/
             // Coba akses model UserModel
-            $user = UserModel::where('username', 'manager9')->firstOrFail();
+            $user = UserModel::where('level_id', 2)->count();
             return view('user', ['data' => $user]);
     }
     }
