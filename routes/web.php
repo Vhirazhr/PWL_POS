@@ -3,6 +3,7 @@
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\LevelController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -28,4 +29,4 @@ route::get('/user/ubah/{id}', [UserController::class, 'ubah'])->name('/user/ubah
 route::get('/user/hapus/{id}', [UserController::class, 'hapus'])->name('/user/hapus');
 route::post('/user/tambah_simpan', [UserController::class, 'tambah_simpan'])->name('/user/tambah_simpan');
 route::put('/user/ubah_simpan/{id}', [UserController::class, 'ubah_simpan'])->name('/user/ubah_simpan');
-
+route::get('/', [WelcomeController::class,'index']);

@@ -18,16 +18,16 @@ class LevelController extends Controller
         //$row = DB::delete('delete from m_level where level_kode = ?', ['CUS']);
         //return 'Delete data berhasil. Jumlah data yang dihapus: ' .$row.'baris'; 
 
-        //$data = DB::select('select * from m_level');
-        //return view('level', ['data' => $data]);
+        $data = DB::select('select * from m_level');
+        return view('level', ['data' => $data]);
 
         // Tambah level baru
-        DB::table('m_level')->insert([
+       /* DB::table('m_level')->insert([
             'level_id' => 4, 
             'level_kode' => 'CST', 
             'level_nama' => 'Customer'
         ]);
 
-        return "Level baru berhasil ditambahkan!";
+        return "Level baru berhasil ditambahkan!";*/
     }
 }
