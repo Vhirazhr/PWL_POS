@@ -1,4 +1,5 @@
 <div class="sidebar">
+  
   <!-- Sidebar Search Form -->
   <div class="form-inline mt-2">
     <div class="input-group" data-widget="sidebar-search">
