@@ -15,4 +15,10 @@ class LevelModel extends Model
     public function user(): HasMany {
         return $this->hasMany(User::class);
     }
+
+    protected $fillable = [
+        'level_kode',
+        'level_nama',
+    ];
+    
 }
