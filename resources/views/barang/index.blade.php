@@ -29,7 +29,6 @@
                             </option>
                         @endforeach
                     </select>
-                    <small class="form-text text-muted">Kategori Barang</small>
                 </div>
             </div>
         </form>
