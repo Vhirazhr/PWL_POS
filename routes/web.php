@@ -6,6 +6,8 @@ use App\Http\Controllers\LevelController;*/
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\LevelController;
+use App\Http\Controllers\StockController;
+use App\Http\Controllers\StokController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
@@ -86,14 +88,14 @@ Route::group(['prefix' => 'barang'], function () {
     Route::delete('/{id}', [BarangController::class, 'destroy']);
 });
 
-Route::group(['prefix' => 'stock'], function () {
-    Route::get('/', [LevelController::class, 'stock'])->name('stock.index');
-    Route::get('/create', [LevelController::class, 'create']);
-    Route::post('/', [LevelController::class, 'store']);
-    Route::get('/{id}', [LevelController::class, 'show']);
-    Route::get('/{id}/edit', [LevelController::class, 'edit']);
-    Route::put('/{id}', [LevelController::class, 'update']);
-    Route::delete('/{id}', [LevelController::class, 'destroy']);
+Route::group(['prefix' => 'stok'], function () {
+    Route::get('/', [StokController::class, 'index'])->name('stok.index');
+    Route::get('/create', [StokController::class, 'create'])->name('stok.create');
+    Route::post('/', [StokController::class, 'store'])->name('stok.store');
+    Route::get('/{id}', [StokController::class, 'show'])->name('stok.show');
+    Route::get('/{id}/edit', [StokController::class, 'edit'])->name('stok.edit');
+    Route::put('/{id}', [StokController::class, 'update'])->name('stok.update');
+    Route::delete('/{id}', [StokController::class, 'destroy'])->name('stok.destroy');
 });
 
 Route::group(['prefix' => 'penjualan'], function () {
