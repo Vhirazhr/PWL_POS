@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class KategoriController extends Controller
 {
+// Tampilan menu kategori
     public function index()
     {
         $breadcrumb = (object) [
@@ -19,7 +20,7 @@ class KategoriController extends Controller
             'title' => 'Daftar kategori yang terdaftar dalam sistem'
         ];
 
-        $activeMenu = 'kategori'; // Pastikan sama dengan nama menu
+        $activeMenu = 'kategori';
 
         return view('kategori.index', [
             'breadcrumb' => $breadcrumb, 
@@ -29,6 +30,7 @@ class KategoriController extends Controller
         ]);
     }
 
+//menambah kategori baru
     public function create()
     {
         $breadcrumb = (object) [
@@ -40,11 +42,12 @@ class KategoriController extends Controller
             'title' => 'Tambah kategori baru'
         ];
 
-        $activeMenu = 'kategori'; // Diperbaiki dari 'kategor'
+        $activeMenu = 'kategori';
 
         return view('kategori.create', compact('breadcrumb', 'page', 'activeMenu'));
     }
 
+    //menyimpan kategori Baru
     public function store(Request $request)
     {
         $request->validate([
@@ -60,6 +63,7 @@ class KategoriController extends Controller
         return redirect('/kategori')->with('success', 'Data kategori berhasil disimpan');
     }
 
+//Detail kategori
     public function show(string $id)
     {
         $kategori = KategoriModel::find($id);
@@ -78,6 +82,7 @@ class KategoriController extends Controller
         return view('kategori.show', compact('breadcrumb', 'page', 'kategori', 'activeMenu'));
     }
 
+    //Edit kategori 
     public function edit(string $id)
     {
         $kategori = KategoriModel::find($id);
@@ -96,6 +101,7 @@ class KategoriController extends Controller
         return view('kategori.edit', compact('breadcrumb', 'page', 'kategori', 'activeMenu'));
     }
 
+    //Update dari edit kategori
     public function update(Request $request, string $id)
     {
         $request->validate([
@@ -111,6 +117,7 @@ class KategoriController extends Controller
         return redirect('/kategori')->with('success', 'Data kategori berhasil diubah');
     }
 
+//Hapus kategori
     public function destroy(string $id)
     {
         $kategori = KategoriModel::find($id);

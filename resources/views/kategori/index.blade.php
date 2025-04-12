@@ -1,5 +1,6 @@
 @extends('layouts.template')
 
+
 @section('content')
 <div class="card card-outline card-primary">
     <div class="card-header">

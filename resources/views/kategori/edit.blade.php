@@ -16,7 +16,7 @@
         @else
             <form method="POST" action="{{ url('/kategori/'.$kategori->kategori_id) }}" class="form-horizontal">
                 @csrf
-                @method('PUT') <!-- untuk method PUT -->
+                @method('PUT') 
 
                 <div class="form-group row">
                     <label class="col-2 col-form-label">Kode kategori</label>
