@@ -92,6 +92,7 @@ Route::group(['prefix' => 'barang'], function () {
     Route::delete('/{id}', [BarangController::class, 'destroy']);
 });
 
+
 Route::group(['prefix' => 'stok'], function () {
     Route::get('/', [StokController::class, 'index'])->name('stok.index');
     Route::get('/create', [StokController::class, 'create'])->name('stok.create');

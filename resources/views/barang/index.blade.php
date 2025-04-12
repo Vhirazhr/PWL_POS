@@ -8,6 +8,7 @@
             <span aria-hidden="true">&times;</span>
         </button>
     </div>
+    
 @endif
 <div class="card card-outline card-primary">
     <div class="card-header">

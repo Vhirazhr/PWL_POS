@@ -7,6 +7,7 @@
         <div class="card-tools"></div>
     </div>
 
+    
     <div class="card-body">
         @empty($barang)
             <div class="alert alert-danger alert-dismissible">

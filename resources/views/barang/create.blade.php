@@ -7,6 +7,7 @@
         <div class="card-tools"></div>
     </div>
 
+    
     <div class="card-body">
         <form method="POST" action="{{ url('barang') }}" class="form-horizontal">
             @csrf
