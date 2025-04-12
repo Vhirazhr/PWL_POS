@@ -142,12 +142,11 @@ class StokController extends Controller
     // EDIT = GANTI jumlah
     $stok->barang_id = $request->barang_id;
     $stok->stock_tanggal = $request->stock_tanggal;
-    $stok->stock_jumlah = $request->stock_jumlah; // ⬅️ GANTI jumlah, BUKAN tambah
+    $stok->stock_jumlah = $request->stock_jumlah;
     $stok->save();
 
     return redirect('/stok')->with('success', 'Stok berhasil diperbarui.');
 }
-
 
 
     // HAPUS DATA

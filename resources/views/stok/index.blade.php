@@ -17,6 +17,7 @@
         </button>
     </div>
 @endif
+
 <div class="row mb-3">
     <div class="col-md-12">
         <form method="GET" action="{{ url('stok') }}" class="form-inline">

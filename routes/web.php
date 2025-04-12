@@ -103,6 +103,7 @@ Route::group(['prefix' => 'stok'], function () {
     Route::delete('/{id}', [StokController::class, 'destroy'])->name('stok.destroy');
 });
 
+
 Route::group(['prefix' => 'penjualan'], function () {
     Route::get('/', [PenjualanController::class, 'index'])->name('penjualan.index');
     Route::get('/create', [PenjualanController::class, 'create'])->name('penjualan.create');

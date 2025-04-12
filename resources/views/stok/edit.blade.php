@@ -5,6 +5,7 @@
     <div class="card-header">
         <h3 class="card-title">{{ $page->title }}</h3>
     </div>
+    
     <div class="card-body">
         @empty($stok)
             <div class="alert alert-danger alert-dismissible">
