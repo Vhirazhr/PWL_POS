@@ -6,6 +6,8 @@ use App\Http\Controllers\LevelController;*/
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\LevelController;
+use App\Http\Controllers\PenjualanController;
+use App\Http\Controllers\PenjualanDetailController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StokController;
 use App\Http\Controllers\UserController;
@@ -99,23 +101,23 @@ Route::group(['prefix' => 'stok'], function () {
 });
 
 Route::group(['prefix' => 'penjualan'], function () {
-    Route::get('/', [LevelController::class, 'penjualan'])->name('penjualan.index');
-    Route::get('/create', [LevelController::class, 'create']);
-    Route::post('/', [LevelController::class, 'store']);
-    Route::get('/{id}', [LevelController::class, 'show']);
-    Route::get('/{id}/edit', [LevelController::class, 'edit']);
-    Route::put('/{id}', [LevelController::class, 'update']);
-    Route::delete('/{id}', [LevelController::class, 'destroy']);
+    Route::get('/', [PenjualanController::class, 'index'])->name('penjualan.index');
+    Route::get('/create', [PenjualanController::class, 'create'])->name('penjualan.create');
+    Route::post('/', [PenjualanController::class, 'store'])->name('penjualan.store');
+    Route::get('/{id}', [PenjualanController::class, 'show'])->name('penjualan.show');
+    Route::get('/{id}/edit', [PenjualanController::class, 'edit'])->name('penjualan.edit');
+    Route::put('/{id}', [PenjualanController::class, 'update'])->name('penjualan.update');
+    Route::delete('/{id}', [PenjualanController::class, 'destroy'])->name('penjualan.destroy');
 });
 
 Route::group(['prefix' => 'penjualan_detail'], function () {
-    Route::get('/', [LevelController::class, 'penjualan_detail'])->name('penjualan_detail.index');
-    Route::get('/create', [LevelController::class, 'create']);
-    Route::post('/', [LevelController::class, 'store']);
-    Route::get('/{id}', [LevelController::class, 'show']);
-    Route::get('/{id}/edit', [LevelController::class, 'edit']);
-    Route::put('/{id}', [LevelController::class, 'update']);
-    Route::delete('/{id}', [LevelController::class, 'destroy']);
+    Route::get('/', [PenjualanDetailController::class, 'index'])->name('penjualan_detail.index');
+    Route::get('/create', [PenjualanDetailController::class, 'create'])->name('penjualan_detail.create');
+    Route::post('/', [PenjualanDetailController::class, 'store'])->name('penjualan_detail.store');
+    Route::get('/{id}', [PenjualanDetailController::class, 'show'])->name('penjualan_detail.show');
+    Route::get('/{id}/edit', [PenjualanDetailController::class, 'edit'])->name('penjualan_detail.edit');
+    Route::put('/{id}', [PenjualanDetailController::class, 'update'])->name('penjualan_detail.update');
+    Route::delete('/{id}', [PenjualanDetailController::class, 'destroy'])->name('penjualan_detail.destroy');
 });
 
 
