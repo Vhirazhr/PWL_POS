@@ -39,10 +39,8 @@ class PenjualanController extends Controller
         'title' => 'Tambah Penjualan Baru'
     ];
 
-    // Ambil data barang yang dibutuhkan untuk dropdown
+    // data barang yang dibutuhkan untuk dropdown
     $barang = BarangModel::select('barang_id', 'barang_nama', 'harga_jual')->get();
-
-    // Ambil semua user (dari m_user)
     $users = UserModel::select('user_id', 'username')->get();
 
     $activeMenu = 'penjualan';
@@ -67,11 +65,11 @@ public function store(Request $request)
 
     DB::beginTransaction();
     try {
-        // Ambil user pertama yang ditemukan (sementara, karena belum ada login)
+        // Ambil user pertama yang ditemukan
         $user = UserModel::first();
 
         $penjualan = PenjualanModel::create([
-            'user_id' => $user->user_id, // karena tidak pakai auth
+            'user_id' => $user->user_id,
             'pembeli' => $request->pembeli,
             'penjualan_kode' => $request->penjualan_kode,
             'penjualan_tanggal' => $request->penjualan_tanggal,
@@ -116,9 +114,8 @@ public function show($id)
 
 public function edit(string $id)
 {
-    // load relasi 'details' juga ya!
+
     $penjualan = PenjualanModel::with('details')->findOrFail($id);
-    
     $barang = BarangModel::all();
     $users = UserModel::all();
 
@@ -157,7 +154,7 @@ public function update(Request $request, $id)
         'pembeli' => $request->pembeli,
     ]);
 
-    // Ambil semua detail_id yang dikirim (kalau ada)
+    // Ambil semua detail_id yang dikirim
     $existingDetailIds = $request->detail_id ?? [];
 
     // Hapus detail yang tidak ada di request
@@ -165,7 +162,7 @@ public function update(Request $request, $id)
         ->whereNotIn('detail_id', $existingDetailIds)
         ->delete();
 
-    // Simpan ulang semua detail (update jika ada id, insert kalau baru)
+    // Simpan ulang semua detail
     foreach ($request->barang_id as $index => $barangId) {
         $detailId = $request->detail_id[$index] ?? null;
 
@@ -196,10 +193,7 @@ public function destroy(string $id)
     }
 
     try {
-        // Hapus dulu semua detail yang terkait
         $penjualan->details()->delete();
-
-        // Baru hapus data utama penjualan
         $penjualan->delete();
 
         return redirect('/penjualan')->with('success', 'Data penjualan berhasil dihapus');
