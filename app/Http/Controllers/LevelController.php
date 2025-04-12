@@ -8,6 +8,8 @@ use Yajra\DataTables\Facades\DataTables;
 
 class LevelController extends Controller
 {
+
+// Menampilkan Halaman Menu Pada Index
     public function index()
     {
         $breadcrumb = (object) [
@@ -25,7 +27,7 @@ class LevelController extends Controller
         return view('level.index', compact('breadcrumb', 'page', 'activeMenu', 'levels'));
     }
 
-    // Menampilkan form tambah level
+// Menampilkan form tambah level
     public function create()
     {
         $breadcrumb = (object) [
@@ -42,7 +44,7 @@ class LevelController extends Controller
         return view('level.create', compact('breadcrumb', 'page', 'activeMenu'));
     }
 
-    // Menyimpan data level baru
+// Menyimpan data level baru
     public function store(Request $request)
     {
         $request->validate([
@@ -58,7 +60,7 @@ class LevelController extends Controller
         return redirect('/level')->with('success', 'Data level berhasil disimpan');
     }
 
-    // Menampilkan detail level
+// Menampilkan detail level
     public function show(string $id)
     {
         $level = LevelModel::find($id);
@@ -77,7 +79,7 @@ class LevelController extends Controller
         return view('level.show', compact('breadcrumb', 'page', 'level', 'activeMenu'));
     }
 
-    // Menampilkan halaman form edit level
+// Menampilkan halaman form edit level
     public function edit(string $id)
     {
         $level = LevelModel::find($id);
@@ -96,7 +98,7 @@ class LevelController extends Controller
         return view('level.edit', compact('breadcrumb', 'page', 'level', 'activeMenu'));
     }
 
-    // Menyimpan perubahan data level
+// Menyimpan perubahan data level
     public function update(Request $request, string $id)
     {
         $request->validate([
@@ -112,7 +114,7 @@ class LevelController extends Controller
         return redirect('/level')->with('success', 'Data level berhasil diubah');
     }
 
-    // Menghapus data level
+// Menghapus data level
     public function destroy(string $id)
     {
         $check = LevelModel::find($id);

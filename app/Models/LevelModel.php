@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+//model Eloquent di Laravel, yang mewakili tabel m_level di database.
 class LevelModel extends Model
 {
     use HasFactory;

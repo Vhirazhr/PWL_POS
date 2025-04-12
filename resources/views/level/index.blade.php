@@ -24,6 +24,7 @@
                     <th>Nama Level</th>
                     <th>Action</th>
                 </tr>
+                
             </thead>
             <tbody>
                 @foreach($levels as $index => $level)

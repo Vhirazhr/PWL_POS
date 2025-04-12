@@ -70,6 +70,7 @@ Route::group(['prefix' => 'level'], function () {
     Route::delete('/{id}', [LevelController::class, 'destroy']);
 });
 
+
 Route::group(['prefix' => 'kategori'], function () {
     Route::get('/', [KategoriController::class, 'index'])->name('kategori.index');
     Route::get('/create', [KategoriController::class, 'create']);
