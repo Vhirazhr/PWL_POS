@@ -42,7 +42,7 @@ class LevelController extends Controller
         $activeMenu = 'level';
 
         return view('level.create', compact('breadcrumb', 'page', 'activeMenu'));
-    }
+    }  
 
 // Menyimpan data level baru
     public function store(Request $request)
@@ -128,5 +128,31 @@ class LevelController extends Controller
         } catch (\Illuminate\Database\QueryException $e) {
             return redirect('/level')->with('error', 'Data level gagal dihapus karena masih terdapat user yang menggunakan level ini');
         }
+    }
+
+    // =========== Update Ajax Version =================
+
+
+    // Edit
+    public function edit_ajax($id)
+    {
+        $level = LevelModel::find($id);
+        return view('level.edit_ajax', compact('level'));
+    }
+
+    public function update_ajax(Request $request, $id)
+    {
+        $request->validate([
+            'level_kode' => 'required|string|min:3|unique:m_level,level_kode,' . $id . ',level_id',
+            'level_nama' => 'required|string|max:100'
+        ]);
+
+        $level = LevelModel::find($id);
+        $level->update([
+            'level_kode' => $request->level_kode,
+            'level_nama' => $request->level_nama
+        ]);
+
+        return response()->json(['message' => 'Data level berhasil diubah', 'data' => $level]);
     }
 }

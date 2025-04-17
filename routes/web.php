@@ -67,6 +67,7 @@ Route::group(['prefix' => 'level'], function () {
     Route::get('/{id}', [LevelController::class, 'show']);
     Route::get('/{id}/edit', [LevelController::class, 'edit']);
     Route::put('/{id}', [LevelController::class, 'update']);
+    Route::get('/{id}/edit_ajax', [UserController::class, 'edit_ajax']);
     Route::delete('/{id}', [LevelController::class, 'destroy']);
 });
 

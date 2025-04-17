@@ -9,26 +9,45 @@ use Illuminate\Support\Facades\DB;
 class KategoriController extends Controller
 {
 // Tampilan menu kategori
-    public function index()
-    {
-        $breadcrumb = (object) [
-            'title' => 'Daftar Kategori',
-            'list' => ['Home', 'Kategori']
-        ];
+public function index(Request $request)
+{
+    $breadcrumb = (object) [
+        'title' => 'Daftar Kategori',
+        'list' => ['Home', 'Kategori']
+    ];
 
-        $page = (object) [
-            'title' => 'Daftar kategori yang terdaftar dalam sistem'
-        ];
+    $page = (object) [
+        'title' => 'Daftar kategori yang terdaftar dalam sistem'
+    ];
 
-        $activeMenu = 'kategori';
+    $activeMenu = 'kategori';
+    $kategoriDropdown = KategoriModel::select('kategori_nama')->distinct()->get();
 
-        return view('kategori.index', [
-            'breadcrumb' => $breadcrumb, 
-            'page' => $page,
-            'kategori' => KategoriModel::all(),
-            'activeMenu' => $activeMenu
-        ]);
+    // Ambil data u/tabel
+    $query = KategoriModel::query();
+    if ($request->kategori_nama) {
+        $query->where('kategori_nama', $request->kategori_nama);
     }
+
+    // Filter search
+    if ($request->search) {
+        $query->where(function($q) use ($request) {
+            $q->where('kategori_nama', 'like', '%' . $request->search . '%')
+              ->orWhere('kategori_kode', 'like', '%' . $request->search . '%');
+        });
+    }
+
+    $kategori = $query->get();
+
+    return view('kategori.index', [
+        'breadcrumb' => $breadcrumb, 
+        'page' => $page,
+        'activeMenu' => $activeMenu,
+        'kategori' => $kategori, 
+        'kategoriDropdown' => $kategoriDropdown, 
+    ]);
+}
+
 
 //menambah kategori baru
     public function create()
