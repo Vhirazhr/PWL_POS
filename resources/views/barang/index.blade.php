@@ -1,23 +1,23 @@
 @extends('layouts.template')
 
 @section('content')
-@if (session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <strong>Sukses!</strong> {{ session('success') }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-    
-@endif
 <div class="card card-outline card-primary">
     <div class="card-header">
         <h3 class="card-title">{{ $page->title }}</h3>
         <div class="card-tools">
             <a class="btn btn-sm btn-primary mt-1" href="{{ url('barang/create') }}">Tambah</a>
+            <button onclick="modalAction('{{ url('barang/create_ajax') }}')" class="btn btn-sm btn-success mt-1">Tambah Ajax</button>
         </div>
     </div>
     <div class="card-body">
+        @if (session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger">{{ session('error') }}</div>
+        @endif
+
+        {{-- Filter Kategori --}}
         <form method="GET" action="{{ url('barang') }}">
             <div class="form-group row">
                 <label class="col-1 control-label col-form-label">Filter:</label>
@@ -34,7 +34,8 @@
             </div>
         </form>
 
-        <table class="table table-bordered table-striped table-hover table-sm">
+        {{-- Tabel DataTables --}}
+        <table id="barang-table" class="table table-bordered table-striped table-hover table-sm">
             <thead>
                 <tr>
                     <th>No</th>
@@ -46,30 +47,48 @@
                     <th>Action</th>
                 </tr>
             </thead>
-            <tbody>
-                @forelse($barang as $item)
-                    <tr>
-                        <td>{{ $loop->iteration }}</td>
-                        <td>{{ $item->barang_kode }}</td>
-                        <td>{{ $item->barang_nama }}</td>
-                        <td>{{ $item->kategori->kategori_nama ?? '-' }}</td>
-                        <td>{{ number_format($item->harga_beli) }}</td>
-                        <td>{{ number_format($item->harga_jual) }}</td>
-                        <td>
-                            <a href="{{ url('barang/' . $item->barang_id) }}" class="btn btn-info btn-sm">Detail</a>
-                            <a href="{{ url('barang/' . $item->barang_id . '/edit') }}" class="btn btn-warning btn-sm">Edit</a>
-                            <form method="POST" action="{{ url('barang/' . $item->barang_id) }}" class="d-inline" onsubmit="return confirm('Yakin hapus?')">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-danger btn-sm">Hapus</button>
-                            </form>
-                        </td>
-                    </tr>
-                @empty
-                    <tr><td colspan="7" class="text-center">Data tidak tersedia</td></tr>
-                @endforelse
-            </tbody>
         </table>
     </div>
 </div>
+
+{{-- Modal --}}
+<div id="myModal" class="modal fade animate shake" tabindex="-1" role="dialog"
+     data-backdrop="static" data-keyboard="false" data-width="75%" aria-hidden="true"></div>
 @endsection
+
+@push('js')
+<script>
+function modalAction(url = '') {
+    $('#myModal').load(url, function() {
+        $('#myModal').modal('show');
+    });
+}
+
+$(document).ready(function() {
+    $('#barang-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "{{ url('/barang/list') }}",
+            data: function (d) {
+                d.kategori_id = $('select[name=kategori_id]').val(); // kirim filter
+            }
+        },
+        columns: [
+            { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+            { data: 'barang_kode', name: 'barang_kode' },
+            { data: 'barang_nama', name: 'barang_nama' },
+            { data: 'kategori.kategori_nama', name: 'kategori.kategori_nama' },
+            { data: 'harga_beli', name: 'harga_beli' },
+            { data: 'harga_jual', name: 'harga_jual' },
+            { data: 'action', name: 'action', orderable: false, searchable: false },
+        ]
+    });
+
+    // Reload DataTables saat filter diubah
+    $('select[name=kategori_id]').on('change', function () {
+        $('#barang-table').DataTable().ajax.reload();
+    });
+});
+</script>
+@endpush
