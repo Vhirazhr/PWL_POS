@@ -105,6 +105,8 @@ Route::group(['prefix' => 'barang'], function () {
     Route::post('/', [BarangController::class, 'store']);
     Route::get('/create_ajax', [BarangController::class, 'create_ajax']);
     Route::post('/ajax', [BarangController::class, 'store_ajax']);
+    Route::get('/import', [BarangController::class, 'import'])->name('barang.import');
+    Route::post('/import_ajax', [BarangController::class, 'import_ajax'])->name('barang.import_ajax');
     Route::get('/{id}', [BarangController::class, 'show']);
     Route::get('/{id}/edit', [BarangController::class, 'edit']);
     Route::put('/{id}', [BarangController::class, 'update']);
@@ -115,6 +117,7 @@ Route::group(['prefix' => 'barang'], function () {
     Route::get('/{id}/show_ajax', [BarangController::class, 'show_ajax']);
     Route::delete('/{id}', [BarangController::class, 'destroy']);
 });
+
 
 
 Route::group(['prefix' => 'stok'], function () {

@@ -7,6 +7,7 @@ use App\Models\KategoriModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class BarangController extends Controller
 {
@@ -140,21 +141,26 @@ class BarangController extends Controller
     // ==================== AJAX ====================
 
     public function list(Request $request)
-    {
-        $barang = BarangModel::with('kategori')->select('barang_id', 'barang_kode', 'barang_nama', 'kategori_id', 'harga_beli', 'harga_jual');
+{
+    $barang = BarangModel::with('kategori')
+        ->select('barang_id', 'barang_kode', 'barang_nama', 'kategori_id', 'harga_beli', 'harga_jual');
 
-        return DataTables::of($barang)
-            ->addIndexColumn()
-            ->addColumn('kategori_nama', fn ($item) => $item->kategori->kategori_nama ?? '-')
-            ->addColumn('action', function ($item) {
-                $btn  = '<button onclick="modalAction(\'' . url('/barang/' . $item->barang_id . '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
-                $btn .= '<button onclick="modalAction(\'' . url('/barang/' . $item->barang_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
-                $btn .= '<button onclick="modalAction(\'' . url('/barang/' . $item->barang_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button>';
-                return $btn;
-            })
-            ->rawColumns(['action'])
-            ->make(true);
+    if ($request->kategori_id) {
+        $barang->where('kategori_id', $request->kategori_id);
     }
+
+    return DataTables::of($barang)
+        ->addIndexColumn()
+        ->addColumn('kategori_nama', fn ($item) => $item->kategori->kategori_nama ?? '-')
+        ->addColumn('action', function ($item) {
+            $btn  = '<button onclick="modalAction(\'' . url('/barang/' . $item->barang_id . '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
+            $btn .= '<button onclick="modalAction(\'' . url('/barang/' . $item->barang_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
+            $btn .= '<button onclick="modalAction(\'' . url('/barang/' . $item->barang_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button>';
+            return $btn;
+        })
+        ->rawColumns(['action'])
+        ->make(true);
+}
 
     public function create_ajax()
     {
@@ -281,4 +287,63 @@ class BarangController extends Controller
 
         return redirect('/');
     }
+
+    public function import()
+{
+    return view('barang.import');
+}
+
+public function import_ajax(Request $request)
+{
+    if ($request->ajax() || $request->wantsJson()) {
+        $validator = Validator::make($request->all(), [
+            'file_barang' => ['required', 'mimes:xlsx', 'max:1024'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validasi gagal',
+                'msgField' => $validator->errors()
+            ]);
+        }
+
+        $file = $request->file('file_barang');
+        $reader = IOFactory::createReader('Xlsx');
+        $reader->setReadDataOnly(true);
+        $spreadsheet = $reader->load($file->getRealPath());
+        $sheet = $spreadsheet->getActiveSheet();
+        $data = $sheet->toArray(null, false, true, true);
+
+        $insert = [];
+
+        foreach ($data as $i => $row) {
+            if ($i == 1) continue; // Skip header
+
+            $insert[] = [
+                'kategori_id'  => $row['A'],
+                'barang_kode'  => $row['B'],
+                'barang_nama'  => $row['C'],
+                'harga_beli'   => $row['D'],
+                'harga_jual'   => $row['E'],
+                'created_at'   => now()
+            ];
+        }
+
+        if (count($insert)) {
+            BarangModel::insertOrIgnore($insert);
+            return response()->json([
+                'status' => true,
+                'message' => 'Data berhasil diimport.'
+            ]);
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Tidak ada data untuk diimport.'
+        ]);
+    }
+
+    return redirect('/barang');
+}
 }
