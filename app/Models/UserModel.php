@@ -29,4 +29,10 @@ class UserModel extends Authenticatable implements JWTSubject
     public function level(){
         return $this->belongsTo(LevelModel::class, 'level_id', 'level_id');
     }
+
+    public function getRouteKeyName()
+{
+    return 'user_id';
+}
+
 }
