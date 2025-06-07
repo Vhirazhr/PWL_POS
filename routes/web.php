@@ -107,6 +107,7 @@ Route::group(['prefix' => 'barang'], function () {
     Route::post('/ajax', [BarangController::class, 'store_ajax']);
     Route::get('/import', [BarangController::class, 'import'])->name('barang.import');
     Route::post('/import_ajax', [BarangController::class, 'import_ajax'])->name('barang.import_ajax');
+    Route::get('/export_excel', [BarangController::class, 'export_excel'])->name('barang.export_excel');
     Route::get('/{id}', [BarangController::class, 'show']);
     Route::get('/{id}/edit', [BarangController::class, 'edit']);
     Route::put('/{id}', [BarangController::class, 'update']);
