@@ -10,17 +10,14 @@ class BarangModel extends Model
 {
     use HasFactory;
 
-    protected $table = 'm_barang'; // ✅ Nama tabel asli kamu
+    protected $table = 'm_barang'; 
     protected $primaryKey = 'barang_id';
     public $timestamps = false;
 
-    protected $fillable = [
-        'kategori_id',
-        'barang_kode',
-        'barang_nama',
-        'harga_beli',
-        'harga_jual',
-    ];
+   protected $fillable = [
+    'barang_kode', 'barang_nama', 'kategori_id',
+    'harga_beli', 'harga_jual', 'barang_gambar'
+];
 
     public function kategori(): BelongsTo
     {
