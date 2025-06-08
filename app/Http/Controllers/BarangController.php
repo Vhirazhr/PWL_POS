@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\BarangModel;
 use App\Models\KategoriModel;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+
 
 class BarangController extends Controller
 {
@@ -411,4 +413,20 @@ public function export_excel()
     $writer->save('php://output');
     exit;
 }
+
+public function export_pdf()
+{
+    $barang = BarangModel::select('kategori_id', 'barang_kode', 'barang_nama', 'harga_beli', 'harga_jual')
+        ->with('kategori')
+        ->orderBy('kategori_id')
+        ->orderBy('barang_kode')
+        ->get();
+
+    $pdf = Pdf::loadView('barang.export_pdf', compact('barang'))
+        ->setPaper('a4', 'portrait')
+        ->setOption(['isRemoteEnabled' => true]);
+
+    return $pdf->stream('Data Barang ' . date('Y-m-d_H-i-s') . '.pdf');
+}
+
 }
