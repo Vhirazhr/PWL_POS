@@ -196,7 +196,7 @@ public function list(Request $request)
     'username' => 'required|string|min:3|unique:m_user,username,' . $id . ',user_id',
     'nama'     => 'required|string|max:100',
     'password' => 'nullable|string|min:5',
-    'level_id' => 'required|integer'
+    'level_id' => 'required|integer|exists:m_level,level_id'
 ]);
 
     
@@ -238,7 +238,7 @@ public function store_ajax(Request $request) {
     // cek apakah request berupa ajax
     if($request->ajax() || $request->wantsJson()){
         $rules = [
-            'level_id' => 'required|integer',
+            'level_id' => 'required|integer|exists:m_level,level_id',
             'username' => 'required|string|min:3|unique:m_user,username',
             'nama' => 'required|string|max:100',
             'password' => 'required|min:6'
@@ -288,7 +288,7 @@ public function update_ajax(Request $request, $id)
 
         // Validasi input
         $rules = [
-            'level_id' => 'required|integer',
+            'level_id' => 'required|integer|exists:m_level,level_id',
             'username' => 'required|max:20|unique:m_user,username,' . $id . ',user_id',
             'nama'     => 'required|max:100',
             'password' => 'nullable|min:6|max:20'
