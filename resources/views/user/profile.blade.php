@@ -16,7 +16,7 @@
             <div class="row">
                 <div class="col-md-4 text-center">
                     @php
-                        $imageUrl = $user->image ?: asset('images/default-image.jpg');
+                        $imageUrl = $user->image ?: asset('adminlte/dist/img/avatar.png');
                     @endphp
 
                     <img src="{{ $imageUrl }}" width="120" class="rounded-circle img-thumbnail mb-2">
@@ -58,7 +58,7 @@
                 <div class="form-group">
                     <label>Foto Profil</label><br>
                     @php
-                        $imagePreview = $user->image ?: asset('images/default-image.jpg');
+                        $imagePreview = $user->image ?: asset('adminlte/dist/img/avatar.png');
                     @endphp
 
                     <img src="{{ $imagePreview }}" width="100" class="rounded mb-2">
