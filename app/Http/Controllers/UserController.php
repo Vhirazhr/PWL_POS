@@ -411,7 +411,7 @@ public function editProfile()
 
 public function updateProfile(Request $request)
 {
-    $user = UserModel::find(auth()->id());
+    $user = $request->user();
 
     $request->validate([
         'nama' => 'required|string|max:100',
