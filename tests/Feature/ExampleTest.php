@@ -6,9 +6,12 @@ use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
-    public function test_guest_visiting_home_is_redirected_to_login(): void
+    public function test_guest_can_view_the_public_landing_page(): void
     {
         $this->get('/')
-            ->assertRedirect(route('login'));
+            ->assertOk()
+            ->assertViewIs('welcome')
+            ->assertSee('PWL POS')
+            ->assertSee('Kelola toko lebih');
     }
 }
