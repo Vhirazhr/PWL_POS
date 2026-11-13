@@ -59,15 +59,15 @@ class BarangController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'barang_kode' => 'required|string|max:10|unique:m_barang,barang_kode',
             'barang_nama' => 'required|string|max:100',
-            'kategori_id' => 'required|integer',
-            'harga_beli'  => 'required|numeric',
-            'harga_jual'  => 'required|numeric',
+            'kategori_id' => 'required|integer|exists:m_kategori,kategori_id',
+            'harga_beli'  => 'required|integer|min:0',
+            'harga_jual'  => 'required|integer|min:0',
         ]);
 
-        BarangModel::create($request->all());
+        BarangModel::create($data);
 
         return redirect('/barang')->with('success', 'Data barang berhasil disimpan.');
     }
@@ -111,16 +111,16 @@ class BarangController extends Controller
 
     public function update(Request $request, $id)
     {
-        $request->validate([
+        $data = $request->validate([
             'barang_kode' => 'required|string|max:10|unique:m_barang,barang_kode,' . $id . ',barang_id',
             'barang_nama' => 'required|string|max:100',
-            'kategori_id' => 'required|integer',
-            'harga_beli'  => 'required|numeric',
-            'harga_jual'  => 'required|numeric',
+            'kategori_id' => 'required|integer|exists:m_kategori,kategori_id',
+            'harga_beli'  => 'required|integer|min:0',
+            'harga_jual'  => 'required|integer|min:0',
         ]);
 
         $barang = BarangModel::findOrFail($id);
-        $barang->update($request->all());
+        $barang->update($data);
 
         return redirect('/barang')->with('success', 'Data barang berhasil diubah.');
     }
@@ -177,9 +177,9 @@ class BarangController extends Controller
             $validator = Validator::make($request->all(), [
                 'barang_kode' => 'required|string|max:10|unique:m_barang,barang_kode',
                 'barang_nama' => 'required|string|max:100',
-                'kategori_id' => 'required|integer',
-                'harga_beli'  => 'required|numeric',
-                'harga_jual'  => 'required|numeric',
+                'kategori_id' => 'required|integer|exists:m_kategori,kategori_id',
+                'harga_beli'  => 'required|integer|min:0',
+                'harga_jual'  => 'required|integer|min:0',
             ]);
 
             if ($validator->fails()) {
@@ -190,7 +190,7 @@ class BarangController extends Controller
                 ]);
             }
 
-            BarangModel::create($request->all());
+            BarangModel::create($validator->validated());
 
             return response()->json([
                 'status' => true,
@@ -235,7 +235,7 @@ class BarangController extends Controller
                 ]);
             }
 
-            $barang->update($request->all());
+            $barang->update($validator->validated());
 
             return response()->json([
                 'status' => true,
