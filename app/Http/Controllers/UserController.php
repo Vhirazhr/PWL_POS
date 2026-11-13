@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\LevelModel;
-use App\Models\User;
 use App\Models\UserModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -132,13 +131,13 @@ public function list(Request $request)
             'username' => 'required|string|min:3|unique:m_user,username',
             'nama'     => 'required|string|max:100',
             'password' => 'required|min:5',
-            'level_id' => 'required|integer'
+            'level_id' => 'required|integer|exists:m_level,level_id'
         ]);
 
         UserModel::create([
             'username' => $request->username,
             'nama'     => $request->nama,
-            'password' => bcrypt($request->password), // Enkripsi password
+            'password' => Hash::make($request->password), // Password disimpan dalam bentuk hash
             'level_id' => $request->level_id
         ]);
 
@@ -148,7 +147,7 @@ public function list(Request $request)
     // Menampilkan detail user show
     public function show(string $id)
     {
-        $user = UserModel::with('level')->find($id);
+        $user = UserModel::with('level')->findOrFail($id);
 
         $breadcrumb = (object) [
             'title' => 'Detail User',
@@ -166,7 +165,7 @@ public function list(Request $request)
   // Menampilkan halaman form edit user
     public function edit(string $id)
     {
-        $user = UserModel::find($id);
+        $user = UserModel::findOrFail($id);
         $level = LevelModel::all();
 
         $breadcrumb = (object) [
@@ -256,14 +255,20 @@ public function store_ajax(Request $request) {
             ]);
         }
 
-        UserModel::create($request->all());
+        UserModel::create([
+            'level_id' => $request->input('level_id'),
+            'username' => $request->input('username'),
+            'nama' => $request->input('nama'),
+            'password' => Hash::make($request->input('password')),
+        ]);
+
         return response()->json([
             'status' => true,
             'message' => 'Data user berhasil disimpan'
         ]);
     }
 
-    redirect('/');
+    return redirect()->route('dashboard');
 }
 
 // Menampilkan halaman form edit user ajax
@@ -301,28 +306,31 @@ public function update_ajax(Request $request, $id)
             ]);
         }
 
-        // Cari user berdasarkan ID
         $user = UserModel::find($id);
 
-        if ($user) {
-            // Jika password tidak diisi, hapus dari data yang akan diupdate
-            if (!$request->filled('password')) {
-                $request->request->remove('password');
-            }
-
-            // Update data user
-            $user->update($request->all());
-
+        if (!$user) {
             return response()->json([
-                'status'  => true,
-                'message' => 'Data berhasil diupdate'
-            ]);
-        } else {
-            return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Data tidak ditemukan'
-            ]);
+            ], 404);
         }
+
+        $data = [
+            'level_id' => $request->input('level_id'),
+            'username' => $request->input('username'),
+            'nama' => $request->input('nama'),
+        ];
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->input('password'));
+        }
+
+        $user->update($data);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Data berhasil diupdate'
+        ]);
     }
 
     // Jika bukan request AJAX, redirect ke halaman utama
@@ -357,9 +365,9 @@ public function delete_ajax(Request $request, $id)
     return redirect('/');
 }
 
-public function showAjax($id)
+public function show_ajax($id)
 {
-    $user = User::with('level')->find($id);
+    $user = UserModel::with('level')->findOrFail($id);
     return view('user.show_ajax', compact('user'));
 }
 
@@ -408,8 +416,9 @@ public function updateProfile(Request $request)
 
     if ($request->hasFile('image')) {
         // Hapus file lama jika ada
-        if ($user->image && Storage::disk('public')->exists($user->image)) {
-            Storage::disk('public')->delete($user->image);
+        $oldImagePath = $user->getRawOriginal('image');
+        if ($oldImagePath && Storage::disk('public')->exists($oldImagePath)) {
+            Storage::disk('public')->delete($oldImagePath);
         }
 
         // Upload ke storage/app/public/uploads/profile
