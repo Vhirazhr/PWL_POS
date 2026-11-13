@@ -193,7 +193,7 @@ public function list(Request $request)
     {
 
      $request->validate([
-    'username' => 'required|string|min:3|unique:m_user,username,' . $id . ',user_id',
+    'username' => 'required|string|min:3|max:20|unique:m_user,username,' . $id . ',user_id',
     'nama'     => 'required|string|max:100',
     'password' => 'nullable|string|min:5',
     'level_id' => 'required|integer|exists:m_level,level_id'
