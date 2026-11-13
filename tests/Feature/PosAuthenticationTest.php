@@ -84,8 +84,20 @@ class PosAuthenticationTest extends TestCase
         $this->assertGuest('web');
     }
 
-    public function test_public_home_remains_available_for_landing_page_work(): void
+    public function test_authenticated_user_can_view_dashboard_summary(): void
     {
-        $this->get('/')->assertOk();
+        $user = $this->createTestUser();
+
+        $this->actingAs($user, 'web')
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Transaksi Terbaru')
+            ->assertSee('Barang Terdaftar');
+    }
+
+    public function test_public_home_redirects_guests_to_login(): void
+    {
+        $this->get('/')
+            ->assertRedirect(route('login'));
     }
 }
