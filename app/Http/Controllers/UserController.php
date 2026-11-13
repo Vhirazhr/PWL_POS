@@ -355,9 +355,9 @@ public function delete_ajax(Request $request, $id)
     return redirect('/');
 }
 
-public function showAjax($id)
+public function show_ajax($id)
 {
-    $user = User::with('level')->find($id);
+    $user = UserModel::with('level')->findOrFail($id);
     return view('user.show_ajax', compact('user'));
 }
 
