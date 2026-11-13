@@ -16,12 +16,7 @@
             <div class="row">
                 <div class="col-md-4 text-center">
                     @php
-                        $imagePath = $user->image;
-                        $imageUrl = asset('images/default-image.jpg'); // default
-
-                        if ($imagePath && Storage::disk('public')->exists($imagePath)) {
-                            $imageUrl = asset('storage/' . $imagePath);
-                        }
+                        $imageUrl = $user->image ?: asset('images/default-image.jpg');
                     @endphp
 
                     <img src="{{ $imageUrl }}" width="120" class="rounded-circle img-thumbnail mb-2">
@@ -42,7 +37,7 @@
                         </tr>
                         <tr>
                             <th>Role</th>
-                            <td>: {{ $user->nama }}</td>
+                            <td>: {{ $user->level->level_nama ?? 'Pengguna' }}</td>
                         </tr>
                     </table>
                 </div>
@@ -63,9 +58,7 @@
                 <div class="form-group">
                     <label>Foto Profil</label><br>
                     @php
-                        $imagePreview = $user->image && Storage::disk('public')->exists($user->image)
-                            ? asset('storage/' . $user->image)
-                            : asset('images/default-image.jpg');
+                        $imagePreview = $user->image ?: asset('images/default-image.jpg');
                     @endphp
 
                     <img src="{{ $imagePreview }}" width="100" class="rounded mb-2">
@@ -75,7 +68,7 @@
                 </div>
 
                 <div class="d-flex justify-content-between">
-                    <a href="{{ route('profile.index') }}" class="btn btn-secondary">Batal</a>
+                    <a href="{{ route('profile') }}" class="btn btn-secondary">Batal</a>
                     <button class="btn btn-primary">Simpan Perubahan</button>
                 </div>
             </form>
