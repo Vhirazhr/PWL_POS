@@ -101,6 +101,12 @@ class PosCrudTest extends TestCase
     {
         $user = $this->createUser();
         $product = $this->createProduct($this->createCategory());
+        StokModel::create([
+            'barang_id' => $product->barang_id,
+            'user_id' => $user->user_id,
+            'stock_tanggal' => '2026-11-13 09:00:00',
+            'stock_jumlah' => 5,
+        ]);
 
         $this->actingAs($user, 'web')
             ->post('/penjualan', [
@@ -119,5 +125,111 @@ class PosCrudTest extends TestCase
 
         $this->assertSame(75000, (int) $detail->harga);
         $this->assertSame(2, (int) $detail->jumlah);
+        $this->assertDatabaseHas('m_stock', [
+            'barang_id' => $product->barang_id,
+            'stock_jumlah' => 3,
+        ]);
+    }
+
+    public function test_sale_is_rejected_when_stock_is_insufficient(): void
+    {
+        $user = $this->createUser();
+        $product = $this->createProduct($this->createCategory());
+        StokModel::create([
+            'barang_id' => $product->barang_id,
+            'user_id' => $user->user_id,
+            'stock_tanggal' => '2026-11-13 09:00:00',
+            'stock_jumlah' => 1,
+        ]);
+
+        $this->actingAs($user, 'web')
+            ->from('/penjualan/create')
+            ->post('/penjualan', [
+                'user_id' => $user->user_id,
+                'pembeli' => 'Pelanggan Test',
+                'penjualan_kode' => 'TRX-TEST-002',
+                'penjualan_tanggal' => '2026-11-13 12:00:00',
+                'barang_id' => [$product->barang_id],
+                'jumlah' => [2],
+            ])
+            ->assertRedirect('/penjualan/create')
+            ->assertSessionHasErrors('barang_id');
+
+        $this->assertDatabaseMissing('m_penjualan', ['penjualan_kode' => 'TRX-TEST-002']);
+        $this->assertDatabaseHas('m_stock', [
+            'barang_id' => $product->barang_id,
+            'stock_jumlah' => 1,
+        ]);
+    }
+
+    public function test_editing_a_sale_recalculates_stock_from_old_and_new_details(): void
+    {
+        $user = $this->createUser();
+        $product = $this->createProduct($this->createCategory());
+        StokModel::create([
+            'barang_id' => $product->barang_id,
+            'user_id' => $user->user_id,
+            'stock_tanggal' => '2026-11-13 09:00:00',
+            'stock_jumlah' => 5,
+        ]);
+
+        $this->actingAs($user, 'web')->post('/penjualan', [
+            'user_id' => $user->user_id,
+            'pembeli' => 'Pelanggan Test',
+            'penjualan_kode' => 'TRX-TEST-003',
+            'penjualan_tanggal' => '2026-11-13 12:00:00',
+            'barang_id' => [$product->barang_id],
+            'jumlah' => [2],
+        ]);
+
+        $sale = PenjualanModel::where('penjualan_kode', 'TRX-TEST-003')->firstOrFail();
+        $detail = PenjualanDetailModel::where('penjualan_id', $sale->penjualan_id)->firstOrFail();
+
+        $this->put('/penjualan/' . $sale->penjualan_id, [
+            'penjualan_kode' => 'TRX-TEST-003',
+            'penjualan_tanggal' => '2026-11-13 13:00:00',
+            'user_id' => $user->user_id,
+            'pembeli' => 'Pelanggan Test',
+            'barang_id' => [$product->barang_id],
+            'jumlah' => [4],
+            'detail_id' => [$detail->detail_id],
+        ])->assertRedirect(route('penjualan.index'));
+
+        $this->assertDatabaseHas('m_stock', [
+            'barang_id' => $product->barang_id,
+            'stock_jumlah' => 1,
+        ]);
+    }
+
+    public function test_deleting_a_sale_restores_its_stock(): void
+    {
+        $user = $this->createUser();
+        $product = $this->createProduct($this->createCategory());
+        StokModel::create([
+            'barang_id' => $product->barang_id,
+            'user_id' => $user->user_id,
+            'stock_tanggal' => '2026-11-13 09:00:00',
+            'stock_jumlah' => 5,
+        ]);
+
+        $this->actingAs($user, 'web')->post('/penjualan', [
+            'user_id' => $user->user_id,
+            'pembeli' => 'Pelanggan Test',
+            'penjualan_kode' => 'TRX-TEST-004',
+            'penjualan_tanggal' => '2026-11-13 12:00:00',
+            'barang_id' => [$product->barang_id],
+            'jumlah' => [2],
+        ]);
+
+        $sale = PenjualanModel::where('penjualan_kode', 'TRX-TEST-004')->firstOrFail();
+
+        $this->delete('/penjualan/' . $sale->penjualan_id)
+            ->assertRedirect(route('penjualan.index'));
+
+        $this->assertDatabaseHas('m_stock', [
+            'barang_id' => $product->barang_id,
+            'stock_jumlah' => 5,
+        ]);
+        $this->assertDatabaseMissing('m_penjualan', ['penjualan_id' => $sale->penjualan_id]);
     }
 }
