@@ -2,7 +2,13 @@
     @auth
         <div class="user-panel mt-3 pb-3 mb-3 d-flex">
             <div class="image">
-                <i class="fas fa-user-circle fa-2x text-light"></i>
+                <img
+                    src="{{ auth()->user()->image ?: asset('adminlte/dist/img/avatar.png') }}"
+                    alt="Foto profil {{ auth()->user()->nama ?? auth()->user()->username }}"
+                    class="img-circle elevation-2"
+                    style="width: 34px; height: 34px; object-fit: cover;"
+                    onerror="this.onerror=null;this.src='{{ asset('adminlte/dist/img/avatar.png') }}';"
+                >
             </div>
             <div class="info">
                 <span class="d-block text-white">{{ auth()->user()->nama ?? auth()->user()->username }}</span>
