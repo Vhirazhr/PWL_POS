@@ -8,6 +8,7 @@ use App\Models\BarangModel;
 use App\Models\KategoriModel;
 use App\Models\UserModel;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 
 class StokController extends Controller
@@ -61,21 +62,28 @@ class StokController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'barang_id' => 'required|exists:m_barang,barang_id',
             'user_id' => 'required|exists:m_user,user_id',
             'stock_tanggal' => 'required|date',
-            'stock_jumlah' => 'required|integer',
+            'stock_jumlah' => 'required|integer|min:1',
         ]);
 
-        $stok = StokModel::where('barang_id', $request->barang_id)->first();
+        DB::transaction(function () use ($data) {
+            $stok = StokModel::where('barang_id', $data['barang_id'])
+                ->lockForUpdate()
+                ->first();
 
-        if ($stok) {
-            $stok->stock_jumlah += $request->stock_jumlah;
-            $stok->save();
-        } else {
-            StokModel::create($request->all());
-        }
+            if ($stok) {
+                $stok->update([
+                    'stock_jumlah' => $stok->stock_jumlah + $data['stock_jumlah'],
+                    'stock_tanggal' => $data['stock_tanggal'],
+                    'user_id' => $data['user_id'],
+                ]);
+            } else {
+                StokModel::create($data);
+            }
+        });
 
         return redirect('/stok')->with('success', 'Data stok berhasil ditambahkan.');
     }
@@ -120,14 +128,14 @@ class StokController extends Controller
 
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'barang_id' => 'required|exists:m_barang,barang_id',
+        $data = $request->validate([
+            'barang_id' => 'required|exists:m_barang,barang_id|unique:m_stock,barang_id,' . $id . ',stock_id',
             'stock_tanggal' => 'required|date',
-            'stock_jumlah' => 'required|integer',
+            'stock_jumlah' => 'required|integer|min:0',
         ]);
 
         $stok = StokModel::findOrFail($id);
-        $stok->update($request->all());
+        $stok->update($data);
 
         return redirect('/stok')->with('success', 'Stok berhasil diperbarui.');
     }
@@ -153,6 +161,12 @@ class StokController extends Controller
     public function list(Request $request)
     {
         $stok = StokModel::with(['barang.kategori']);
+
+        if ($request->filled('kategori_id')) {
+            $stok->whereHas('barang', function ($query) use ($request) {
+                $query->where('kategori_id', $request->kategori_id);
+            });
+        }
 
         return DataTables::of($stok)
             ->addIndexColumn()
@@ -182,7 +196,7 @@ class StokController extends Controller
                 'barang_id' => 'required|exists:m_barang,barang_id',
                 'user_id' => 'required|exists:m_user,user_id',
                 'stock_tanggal' => 'required|date',
-                'stock_jumlah' => 'required|integer',
+                'stock_jumlah' => 'required|integer|min:1',
             ]);
 
             if ($validator->fails()) {
@@ -193,13 +207,23 @@ class StokController extends Controller
                 ]);
             }
 
-            $stok = StokModel::where('barang_id', $request->barang_id)->first();
-            if ($stok) {
-                $stok->stock_jumlah += $request->stock_jumlah;
-                $stok->save();
-            } else {
-                StokModel::create($request->all());
-            }
+            $data = $validator->validated();
+
+            DB::transaction(function () use ($data) {
+                $stok = StokModel::where('barang_id', $data['barang_id'])
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($stok) {
+                    $stok->update([
+                        'stock_jumlah' => $stok->stock_jumlah + $data['stock_jumlah'],
+                        'stock_tanggal' => $data['stock_tanggal'],
+                        'user_id' => $data['user_id'],
+                    ]);
+                } else {
+                    StokModel::create($data);
+                }
+            });
 
             return response()->json([
                 'status' => true,
@@ -224,7 +248,8 @@ class StokController extends Controller
             $validator = Validator::make($request->all(), [
                 'barang_id' => 'required|exists:m_barang,barang_id',
                 'stock_tanggal' => 'required|date',
-                'stock_jumlah' => 'required|integer',
+                'stock_jumlah' => 'required|integer|min:0',
+                'barang_id' => 'required|exists:m_barang,barang_id|unique:m_stock,barang_id,' . $id . ',stock_id',
             ]);
 
             if ($validator->fails()) {
@@ -243,7 +268,7 @@ class StokController extends Controller
                 ]);
             }
 
-            $stok->update($request->all());
+            $stok->update($validator->validated());
 
             return response()->json([
                 'status' => true,
