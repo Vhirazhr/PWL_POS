@@ -54,7 +54,6 @@
                     <label for="password">Password</label>
                     <input id="password" name="password" type="password" required autocomplete="current-password">
                     @error('password') <div class="field-error">{{ $message }}</div> @enderror
-                    <div class="check"><input type="checkbox" id="remember" name="remember" value="1"><label for="remember">Ingat saya</label></div>
                     <button type="submit">Masuk</button>
                 </form>
             </div>
