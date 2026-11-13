@@ -2,37 +2,42 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\PenjualanDetailModel;
 use App\Models\BarangModel;
+use App\Models\PenjualanDetailModel;
+use App\Models\PenjualanModel;
+use Illuminate\Http\Request;
 
 class PenjualanDetailController extends Controller
 {
     public function store(Request $request)
     {
-        $request->validate([
-            'penjualan_id' => 'required|exists:penjualan,penjualan_id',
-            'barang_id' => 'required|exists:m_barang,barang_id',
-            'harga' => 'required|numeric|min:0',
-            'jumlah' => 'required|integer|min:1'
+        $data = $request->validate([
+            'penjualan_id' => ['required', 'exists:m_penjualan,penjualan_id'],
+            'barang_id' => ['required', 'exists:m_barang,barang_id'],
+            'jumlah' => ['required', 'integer', 'min:1'],
         ]);
+
+        $penjualan = PenjualanModel::findOrFail($data['penjualan_id']);
+        $barang = BarangModel::findOrFail($data['barang_id']);
 
         PenjualanDetailModel::create([
-            'penjualan_id' => $request->penjualan_id,
-            'barang_id' => $request->barang_id,
-            'harga' => $request->harga,
-            'jumlah' => $request->jumlah
+            'penjualan_id' => $penjualan->penjualan_id,
+            'barang_id' => $barang->barang_id,
+            'harga' => $barang->harga_jual,
+            'jumlah' => $data['jumlah'],
         ]);
 
-        return redirect('/penjualan/' . $request->penjualan_id)->with('success', 'Barang berhasil ditambahkan ke penjualan');
+        return redirect('/penjualan/' . $penjualan->penjualan_id)
+            ->with('success', 'Barang berhasil ditambahkan ke penjualan.');
     }
 
     public function destroy(string $id)
     {
         $detail = PenjualanDetailModel::findOrFail($id);
-        $penjualan_id = $detail->penjualan_id;
+        $penjualanId = $detail->penjualan_id;
         $detail->delete();
 
-        return redirect('/penjualan/' . $penjualan_id)->with('success', 'Detail barang berhasil dihapus');
+        return redirect('/penjualan/' . $penjualanId)
+            ->with('success', 'Detail barang berhasil dihapus.');
     }
 }
