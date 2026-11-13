@@ -51,7 +51,7 @@ class PenjualanDetailController extends Controller
 
     public function destroy(string $id)
     {
-        DB::transaction(function () use ($id) {
+        $penjualanId = DB::transaction(function () use ($id) {
             $detail = PenjualanDetailModel::lockForUpdate()->findOrFail($id);
             $stok = StokModel::where('barang_id', $detail->barang_id)->lockForUpdate()->first();
 
@@ -71,11 +71,11 @@ class PenjualanDetailController extends Controller
 
             $penjualanId = $detail->penjualan_id;
             $detail->delete();
+
+            return $penjualanId;
         });
 
-        $penjualanId = PenjualanDetailModel::find($id)?->penjualan_id;
-
-        return redirect('/penjualan/' . ($penjualanId ?? ''))
+        return redirect('/penjualan/' . $penjualanId)
             ->with('success', 'Detail barang berhasil dihapus dan stok dikembalikan.');
     }
 }
