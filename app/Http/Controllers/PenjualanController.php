@@ -147,7 +147,7 @@ class PenjualanController extends Controller
             'jumlah' => ['required', 'array', 'min:1'],
             'jumlah.*' => ['required', 'integer', 'min:1'],
             'detail_id' => ['sometimes', 'array'],
-            'detail_id.*' => ['nullable', 'integer', 'distinct', 'exists:m_penjualan_detail_table,detail_id'],
+            'detail_id.*' => ['nullable', 'integer', 'exists:m_penjualan_detail_table,detail_id'],
         ]);
 
         if (count($data['barang_id']) !== count($data['jumlah'])) {
@@ -161,6 +161,12 @@ class PenjualanController extends Controller
             ->filter(fn ($value) => $value !== null && $value !== '')
             ->map(fn ($value) => (int) $value)
             ->values();
+
+        if ($detailIds->count() !== $detailIds->unique()->count()) {
+            throw ValidationException::withMessages([
+                'detail_id' => 'Ada detail transaksi yang terkirim lebih dari satu kali.',
+            ]);
+        }
 
         DB::transaction(function () use ($id, $data, $barang, $detailIds) {
             $penjualan = PenjualanModel::with('details')->findOrFail($id);
