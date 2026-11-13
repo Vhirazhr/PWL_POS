@@ -11,7 +11,7 @@ class PenjualanDetailController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'penjualan_id' => 'required|exists:penjualan,penjualan_id',
+            'penjualan_id' => 'required|exists:m_penjualan,penjualan_id',
             'barang_id' => 'required|exists:m_barang,barang_id',
             'harga' => 'required|numeric|min:0',
             'jumlah' => 'required|integer|min:1'
