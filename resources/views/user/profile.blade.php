@@ -19,7 +19,16 @@
                         $imageUrl = $user->image ?: asset('adminlte/dist/img/avatar.png');
                     @endphp
 
-                    <img src="{{ $imageUrl }}" width="120" class="rounded-circle img-thumbnail mb-2">
+                    <img
+                        src="{{ $imageUrl }}"
+                        alt="Foto profil {{ $user->nama }}"
+                        width="120"
+                        height="120"
+                        class="rounded-circle img-thumbnail mb-2"
+                        style="object-fit: cover;"
+                        loading="lazy"
+                        onerror="this.onerror=null;this.src='{{ asset('adminlte/dist/img/avatar.png') }}';"
+                    >
                     <form action="{{ route('profile.edit') }}" method="GET">
                         <button class="btn btn-warning btn-sm mt-2">Ubah Profil</button>
                     </form>
@@ -61,7 +70,15 @@
                         $imagePreview = $user->image ?: asset('adminlte/dist/img/avatar.png');
                     @endphp
 
-                    <img src="{{ $imagePreview }}" width="100" class="rounded mb-2">
+                    <img
+                        src="{{ $imagePreview }}"
+                        alt="Pratinjau foto profil"
+                        width="100"
+                        height="100"
+                        class="rounded-circle img-thumbnail mb-2"
+                        style="object-fit: cover;"
+                        onerror="this.onerror=null;this.src='{{ asset('adminlte/dist/img/avatar.png') }}';"
+                    >
                     <input type="file" name="image" class="form-control-file">
                     <small class="text-muted">Format: jpg, jpeg, png. Maks: 1MB</small>
                     @error('image') <div class="text-danger">{{ $message }}</div> @enderror
