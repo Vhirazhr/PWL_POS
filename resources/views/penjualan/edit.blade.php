@@ -68,9 +68,9 @@
                                     <input type="number" name="harga[]" class="form-control harga-input" value="{{ $detail->harga }}" readonly required>
                                 </td>
                                 <td>
+                                    <input type="hidden" name="detail_id[]" value="{{ $detail->detail_id }}">
                                     <button type="button" class="btn btn-danger btn-sm remove-row">Hapus</button>
                                 </td>
-                                <input type="hidden" name="detail_id[]" value="{{ $detail->detail_id }}">
                             </tr>
                         @endforeach
                     </tbody>
@@ -116,7 +116,7 @@
                     </td>
                     <td><input type="number" name="jumlah[]" class="form-control" required></td>
                     <td><input type="number" name="harga[]" class="form-control harga-input" readonly required></td>
-                    <td><button type="button" class="btn btn-danger btn-sm remove-row">Hapus</button></td>
+                    <td><input type="hidden" name="detail_id[]" value=""><button type="button" class="btn btn-danger btn-sm remove-row">Hapus</button></td>
                 `;
 
                 tableBody.appendChild(newRow);
