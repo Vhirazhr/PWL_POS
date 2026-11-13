@@ -8,11 +8,11 @@ use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\LevelController;
 use App\Http\Controllers\PenjualanController;
 use App\Http\Controllers\PenjualanDetailController;
-use App\Http\Controllers\StockController;
 use App\Http\Controllers\StokController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\SessionController;
 use Monolog\Level;
 
 /*
@@ -40,7 +40,14 @@ route::post('/user/tambah_simpan', [UserController::class, 'tambah_simpan'])->na
 route::put('/user/ubah_simpan/{id}', [UserController::class, 'ubah_simpan'])->name('/user/ubah_simpan');
 route::get('/', [WelcomeController::class,'index']);*/
 
-Route::get('/', [WelcomeController::class, 'index']);
+Route::middleware('guest:web')->group(function () {
+    Route::get('/login', [SessionController::class, 'create'])->name('login');
+    Route::post('/login', [SessionController::class, 'store'])->middleware('throttle:5,1')->name('login.store');
+});
+
+Route::middleware('auth:web')->group(function () {
+    Route::post('/logout', [SessionController::class, 'destroy'])->name('logout');
+    Route::get('/', [WelcomeController::class, 'index'])->name('dashboard');
 
 Route::group(['prefix' => 'user'], function () {
     Route::get('/', [UserController::class, 'index']);       // menampilkan halaman awal user
@@ -128,7 +135,7 @@ Route::group(['prefix' => 'stok'], function () {
     Route::get('/create', [StokController::class, 'create'])->name('stok.create');
     Route::post('/', [StokController::class, 'store'])->name('stok.store');
     Route::get('/create_ajax', [StokController::class, 'create_ajax']);
-    Route::post('/ajax', [stokController::class, 'store_ajax']);
+    Route::post('/ajax', [StokController::class, 'store_ajax']);
     Route::get('/{id}', [StokController::class, 'show'])->name('stok.show');
     Route::get('/{id}/edit', [StokController::class, 'edit'])->name('stok.edit');
     Route::put('/{id}', [StokController::class, 'update'])->name('stok.update');
@@ -181,6 +188,4 @@ Route::group(['prefix' => 'penjualan_detail'], function () {
     Route::put('/{id}', [PenjualanDetailController::class, 'update'])->name('penjualan_detail.update');
     Route::delete('/{id}', [PenjualanDetailController::class, 'destroy'])->name('penjualan_detail.destroy');
 });
-
-
-
+});
