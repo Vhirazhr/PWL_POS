@@ -246,10 +246,9 @@ class StokController extends Controller
     {
         if ($request->ajax()) {
             $validator = Validator::make($request->all(), [
-                'barang_id' => 'required|exists:m_barang,barang_id',
+                'barang_id' => 'required|exists:m_barang,barang_id|unique:m_stock,barang_id,' . $id . ',stock_id',
                 'stock_tanggal' => 'required|date',
                 'stock_jumlah' => 'required|integer|min:0',
-                'barang_id' => 'required|exists:m_barang,barang_id|unique:m_stock,barang_id,' . $id . ',stock_id',
             ]);
 
             if ($validator->fails()) {
