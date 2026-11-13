@@ -95,6 +95,27 @@ class PosAuthenticationTest extends TestCase
             ->assertSee('Barang Terdaftar');
     }
 
+    public function test_authenticated_user_can_open_core_management_pages(): void
+    {
+        $user = $this->createTestUser();
+
+        $this->actingAs($user, 'web');
+
+        foreach ([
+            '/dashboard',
+            '/profile',
+            '/profile/edit',
+            '/user',
+            '/level',
+            '/kategori',
+            '/barang',
+            '/stok',
+            '/penjualan',
+        ] as $path) {
+            $this->get($path)->assertOk();
+        }
+    }
+
     public function test_public_home_redirects_guests_to_login(): void
     {
         $this->get('/')
