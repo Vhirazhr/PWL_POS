@@ -165,6 +165,10 @@ class PosAuthenticationTest extends TestCase
 
         $path = 'uploads/profile/'.$photo->hashName();
         Storage::disk('public')->assertExists($path);
+        $this->assertDatabaseHas('m_user', [
+            'user_id' => $user->user_id,
+            'image' => $path,
+        ]);
 
         $this->get(route('profile'))
             ->assertOk()
