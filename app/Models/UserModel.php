@@ -39,12 +39,50 @@ class UserModel extends Authenticatable implements JWTSubject
         return $this->belongsTo(LevelModel::class, 'level_id', 'level_id');
     }
 
+    /**
+     * Resolve profile photos saved by both the legacy public folder and
+     * Laravel's public storage disk.
+     */
     protected function image(): Attribute
-{
-    return Attribute::make(
-    get: fn ($image) => $image ? Storage::disk('public')->url($image) : null,
-    );
-}
+    {
+        return Attribute::make(
+            get: function ($image): ?string {
+                if (!$image) {
+                    return null;
+                }
+
+                // Preserve externally hosted profile images, if any.
+                if (filter_var($image, FILTER_VALIDATE_URL)) {
+                    return $image;
+                }
+
+                $path = ltrim(str_replace('\\\\', '/', trim($image)), '/');
+                $path = preg_replace('#^(public/|storage/)#', '', $path);
+
+                $candidates = [$path];
+
+                // Older records may contain only the filename.
+                if (!str_contains($path, '/')) {
+                    $candidates[] = 'uploads/profile/'.$path;
+                }
+
+                foreach (array_unique($candidates) as $candidate) {
+                    // New uploads are stored on Laravel's public disk.
+                    if (Storage::disk('public')->exists($candidate)) {
+                        return Storage::disk('public')->url($candidate);
+                    }
+
+                    // Older uploads were stored directly under public/.
+                    if (is_file(public_path($candidate))) {
+                        return asset($candidate);
+                    }
+                }
+
+                // Let the view display its default avatar when the file is missing.
+                return null;
+            },
+        );
+    }
 
     public function getRouteKeyName()
 {
