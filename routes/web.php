@@ -24,8 +24,12 @@ Route::middleware('guest')->group(function () {
         ->name('login.submit');
 });
 
-// Halaman depan tetap publik agar desain landing page bisa dikembangkan terpisah.
-Route::get('/', [WelcomeController::class, 'index'])->name('home');
+// Arahkan pengunjung ke login agar tidak masuk ke halaman welcome placeholder.
+Route::get('/', function () {
+    return auth()->check()
+        ? redirect()->route('dashboard')
+        : redirect()->route('login');
+})->name('home');
 
 /*
 |--------------------------------------------------------------------------
