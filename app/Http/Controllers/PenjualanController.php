@@ -54,22 +54,22 @@ class PenjualanController extends Controller
 public function store(Request $request)
 {
     $request->validate([
+        'user_id' => 'required|exists:m_user,user_id',
         'pembeli' => 'required|string|max:100',
         'penjualan_kode' => 'required|string|unique:m_penjualan,penjualan_kode',
         'penjualan_tanggal' => 'required|date',
         'barang_id' => 'required|array|min:1',
-        'barang_id.*' => 'exists:m_barang,barang_id',
+        'barang_id.*' => 'required|exists:m_barang,barang_id',
+        'jumlah' => 'required|array',
         'jumlah.*' => 'required|integer|min:1',
+        'harga' => 'required|array',
         'harga.*' => 'required|integer|min:0',
     ]);
 
     DB::beginTransaction();
     try {
-        // Ambil user pertama yang ditemukan
-        $user = UserModel::first();
-
         $penjualan = PenjualanModel::create([
-            'user_id' => $user->user_id,
+            'user_id' => $request->user_id,
             'pembeli' => $request->pembeli,
             'penjualan_kode' => $request->penjualan_kode,
             'penjualan_tanggal' => $request->penjualan_tanggal,
@@ -139,13 +139,17 @@ public function update(Request $request, $id)
     $request->validate([
         'penjualan_kode' => 'required',
         'penjualan_tanggal' => 'required',
-        'user_id' => 'required',
-        'pembeli' => 'required',
-        'barang_id' => 'required|array',
+        'user_id' => 'required|exists:m_user,user_id',
+        'pembeli' => 'required|string|max:100',
+        'barang_id' => 'required|array|min:1',
+        'barang_id.*' => 'required|exists:m_barang,barang_id',
         'jumlah' => 'required|array',
+        'jumlah.*' => 'required|integer|min:1',
         'harga' => 'required|array',
+        'harga.*' => 'required|integer|min:0',
     ]);
 
+    DB::transaction(function () use ($request, $id) {
     $penjualan = PenjualanModel::findOrFail($id);
     $penjualan->update([
         'penjualan_kode' => $request->penjualan_kode,
@@ -156,6 +160,13 @@ public function update(Request $request, $id)
 
     // Ambil semua detail_id yang dikirim
     $existingDetailIds = $request->detail_id ?? [];
+
+    // Only permit editing detail IDs belonging to this sale.
+    $existing = PenjualanDetailModel::where('penjualan_id', $penjualan->penjualan_id)
+        ->whereIn('detail_id', $existingDetailIds)->pluck('detail_id')->map(fn ($id) => (string) $id)->all();
+    if (count(array_unique(array_map('strval', $existingDetailIds))) !== count($existing)) {
+        throw \Illuminate\Validation\ValidationException::withMessages(['detail_id' => 'Detail transaksi tidak valid.']);
+    }
 
     // Hapus detail yang tidak ada di request
     PenjualanDetailModel::where('penjualan_id', $penjualan->penjualan_id)
@@ -174,11 +185,14 @@ public function update(Request $request, $id)
         ];
 
         if ($detailId) {
-            PenjualanDetailModel::where('detail_id', $detailId)->update($dataDetail);
+            PenjualanDetailModel::where('detail_id', $detailId)
+                ->where('penjualan_id', $penjualan->penjualan_id)->update($dataDetail);
         } else {
             PenjualanDetailModel::create($dataDetail);
         }
     }
+
+    });
 
     return redirect()->route('penjualan.index')->with('success', 'Penjualan berhasil diperbarui.');
 }
