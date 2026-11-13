@@ -56,7 +56,7 @@ class UserModel extends Authenticatable implements JWTSubject
                     return $image;
                 }
 
-                $path = ltrim(str_replace('\\\\', '/', trim($image)), '/');
+                $path = ltrim(str_replace(chr(92), '/', trim($image)), '/');
                 $path = preg_replace('#^(public/|storage/)#', '', $path);
 
                 $candidates = [$path];
