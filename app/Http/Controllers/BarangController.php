@@ -214,9 +214,9 @@ class BarangController extends Controller
             $validator = Validator::make($request->all(), [
                 'barang_kode' => 'required|string|max:10|unique:m_barang,barang_kode,' . $id . ',barang_id',
                 'barang_nama' => 'required|string|max:100',
-                'kategori_id' => 'required|integer',
-                'harga_beli'  => 'required|numeric',
-                'harga_jual'  => 'required|numeric',
+                'kategori_id' => 'required|integer|exists:m_kategori,kategori_id',
+                'harga_beli'  => 'required|integer|min:0',
+                'harga_jual'  => 'required|integer|min:0',
             ]);
 
             if ($validator->fails()) {
