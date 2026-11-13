@@ -22,6 +22,15 @@
         </a>
       </li>
 
+  <nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+      <li class="nav-item">
+        <a href="{{ url('/profile') }}" class="nav-link {{ isset($activeMenu) && $activeMenu == 'profile' ? 'active' : '' }}">
+        <i class="nav-icon fas fa-user-circle"></i>
+        <p>Profile</p>
+      </a>
+      </li>
+
       <li class="nav-header">User Data</li>
       <li class="nav-item">
         <a href="{{ url('/level') }}" class="nav-link {{ ($activeMenu == 'level') ? 'active' : '' }}">
@@ -63,6 +72,17 @@
           <p>Sales Transactions</p>
         </a>
       </li>
+
+      <li class="nav-item">
+    <form action="{{ route('logout') }}" method="POST" onsubmit="return confirm('Yakin ingin logout?')" style="display: inline;">
+        @csrf
+        <button type="submit" class="nav-link btn text-left" style="width: 100%; color: #c82333;">
+            <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
+            <p>Logout</p>
+        </button>
+    </form>
+</li>
+
     </ul>
   </nav>
 </div>

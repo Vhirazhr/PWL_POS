@@ -14,6 +14,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 use Monolog\Level;
+use App\Http\Controllers\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,7 +41,14 @@ route::post('/user/tambah_simpan', [UserController::class, 'tambah_simpan'])->na
 route::put('/user/ubah_simpan/{id}', [UserController::class, 'ubah_simpan'])->name('/user/ubah_simpan');
 route::get('/', [WelcomeController::class,'index']);*/
 
+Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', [WelcomeController::class, 'index']);
+
+Route::get('/profile', [UserController::class, 'profile'])->name('profile');
+Route::get('/profile/edit', [UserController::class, 'editProfile'])->name('profile.edit');
+Route::put('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
 
 Route::group(['prefix' => 'user'], function () {
     Route::get('/', [UserController::class, 'index']);       // menampilkan halaman awal user
@@ -57,7 +65,8 @@ Route::group(['prefix' => 'user'], function () {
     Route::get('/{id}/delete_ajax', [UserController::class, 'confirm_ajax']); // menampilkan halaman form edit user
     Route::delete('/{id}/delete_ajax', [UserController::class, 'delete_ajax']);
     Route::get('/{id}/show_ajax', [UserController::class, 'show_ajax']);
-    Route::delete('/{id}', [UserController::class, 'destroy']); // menghapus data user 
+    Route::delete('/{id}', [UserController::class, 'destroy']); // menghapus data user
+
 });
 
 Route::group(['prefix' => 'level'], function () {

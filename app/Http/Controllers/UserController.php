@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
+
 
 
 class UserController extends Controller{
@@ -361,6 +363,64 @@ public function showAjax($id)
     return view('user.show_ajax', compact('user'));
 }
 
+public function __construct()
+{
+    $this->middleware('auth')->only(['profile', 'updateProfile']);
+}
+
+
+public function profile()
+{
+    $user = auth()->user();
+    $activeMenu = 'profile';
+
+    $breadcrumb = (object)[
+        'title' => 'Profil Saya',
+        'list' => ['Home', 'Profil']
+    ];
+
+    return view('user.profile', compact('user', 'activeMenu', 'breadcrumb'));
+}
+
+public function editProfile()
+{
+    $user = auth()->user();
+    $activeMenu = 'profile';
+
+    $breadcrumb = (object)[
+        'title' => 'Edit Profil',
+        'list' => ['Home', 'Profil', 'Edit']
+    ];
+
+    return view('user.profile', compact('user', 'activeMenu', 'breadcrumb'));
+}
+
+public function updateProfile(Request $request)
+{
+    $user = UserModel::find(auth()->id());
+
+    $request->validate([
+        'nama' => 'required|string|max:100',
+        'image' => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
+    ]);
+
+    $user->nama = $request->nama;
+
+    if ($request->hasFile('image')) {
+        // Hapus file lama jika ada
+        if ($user->image && Storage::disk('public')->exists($user->image)) {
+            Storage::disk('public')->delete($user->image);
+        }
+
+        // Upload ke storage/app/public/uploads/profile
+        $path = $request->file('image')->store('uploads/profile', 'public');
+        $user->image = $path;
+    }
+
+    $user->save();
+
+    return redirect()->route('profile')->with('success', 'Profil berhasil diperbarui.');
+}
 
   }
 
