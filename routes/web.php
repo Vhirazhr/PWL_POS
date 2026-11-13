@@ -24,11 +24,11 @@ Route::middleware('guest')->group(function () {
         ->name('login.submit');
 });
 
-// Arahkan pengunjung ke login agar tidak masuk ke halaman welcome placeholder.
+// Halaman publik untuk pengunjung; pengguna yang sudah login langsung ke dashboard.
 Route::get('/', function () {
     return auth()->check()
         ? redirect()->route('dashboard')
-        : redirect()->route('login');
+        : view('welcome');
 })->name('home');
 
 /*
