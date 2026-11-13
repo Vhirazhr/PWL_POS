@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BarangModel;
 use App\Models\PenjualanDetailModel;
 use App\Models\PenjualanModel;
+use App\Models\StokModel;
 use App\Models\UserModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -70,6 +71,10 @@ class PenjualanController extends Controller
         $barang = BarangModel::whereIn('barang_id', $data['barang_id'])->get()->keyBy('barang_id');
 
         DB::transaction(function () use ($data, $barang) {
+            foreach ($data['barang_id'] as $index => $barangId) {
+                $this->reduceStock((int) $barangId, (int) $data['jumlah'][$index]);
+            }
+
             $penjualan = PenjualanModel::create([
                 'user_id' => $data['user_id'],
                 'pembeli' => $data['pembeli'],
@@ -169,7 +174,7 @@ class PenjualanController extends Controller
         }
 
         DB::transaction(function () use ($id, $data, $barang, $detailIds) {
-            $penjualan = PenjualanModel::with('details')->findOrFail($id);
+            $penjualan = PenjualanModel::with('details')->lockForUpdate()->findOrFail($id);
             $existingDetails = $penjualan->details->keyBy('detail_id');
 
             foreach ($detailIds as $detailId) {
@@ -178,6 +183,16 @@ class PenjualanController extends Controller
                         'detail_id' => 'Detail barang tidak sesuai dengan transaksi ini.',
                     ]);
                 }
+            }
+
+            // Kembalikan stok dari detail lama sebelum menghitung isi transaksi yang baru.
+            foreach ($penjualan->details as $detail) {
+                $this->restoreStock((int) $detail->barang_id, (int) $detail->jumlah);
+            }
+
+            // Kurangi stok sesuai detail transaksi yang baru.
+            foreach ($data['barang_id'] as $index => $barangId) {
+                $this->reduceStock((int) $barangId, (int) $data['jumlah'][$index]);
             }
 
             $penjualan->update([
@@ -217,11 +232,55 @@ class PenjualanController extends Controller
     public function destroy(string $id)
     {
         DB::transaction(function () use ($id) {
-            $penjualan = PenjualanModel::findOrFail($id);
+            $penjualan = PenjualanModel::with('details')->lockForUpdate()->findOrFail($id);
+
+            foreach ($penjualan->details as $detail) {
+                $this->restoreStock((int) $detail->barang_id, (int) $detail->jumlah);
+            }
+
             $penjualan->details()->delete();
             $penjualan->delete();
         });
 
-        return redirect()->route('penjualan.index')->with('success', 'Data penjualan berhasil dihapus.');
+        return redirect()->route('penjualan.index')->with('success', 'Data penjualan berhasil dihapus dan stok dikembalikan.');
+    }
+
+    private function reduceStock(int $barangId, int $quantity): void
+    {
+        $stok = StokModel::where('barang_id', $barangId)->lockForUpdate()->first();
+        $barang = BarangModel::findOrFail($barangId);
+        $available = (int) ($stok->stock_jumlah ?? 0);
+
+        if (!$stok || $available < $quantity) {
+            throw ValidationException::withMessages([
+                'barang_id' => "Stok {$barang->barang_nama} tidak mencukupi. Tersedia {$available}, dibutuhkan {$quantity}.",
+            ]);
+        }
+
+        $stok->stock_jumlah = $available - $quantity;
+        $stok->stock_tanggal = now();
+        $stok->user_id = auth()->id() ?? $stok->user_id;
+        $stok->save();
+    }
+
+    private function restoreStock(int $barangId, int $quantity): void
+    {
+        $stok = StokModel::where('barang_id', $barangId)->lockForUpdate()->first();
+
+        if ($stok) {
+            $stok->stock_jumlah += $quantity;
+            $stok->stock_tanggal = now();
+            $stok->user_id = auth()->id() ?? $stok->user_id;
+            $stok->save();
+
+            return;
+        }
+
+        StokModel::create([
+            'barang_id' => $barangId,
+            'user_id' => auth()->id(),
+            'stock_tanggal' => now(),
+            'stock_jumlah' => $quantity,
+        ]);
     }
 }
