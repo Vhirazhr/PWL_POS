@@ -128,7 +128,7 @@ public function list(Request $request)
     public function store(Request $request)
     {
         $request->validate([
-            'username' => 'required|string|min:3|unique:m_user,username',
+            'username' => 'required|string|min:3|max:20|unique:m_user,username',
             'nama'     => 'required|string|max:100',
             'password' => 'required|min:5',
             'level_id' => 'required|integer|exists:m_level,level_id'
@@ -201,12 +201,18 @@ public function list(Request $request)
 
     
 
-        UserModel::find($id)->update([
+        $user = UserModel::findOrFail($id);
+        $data = [
             'username' => $request->username,
-            'nama'     => $request->nama,
-            'password' => $request->password ? bcrypt($request->password) : UserModel::find($id)->password,
-            'level_id' => $request->level_id
-        ]);
+            'nama' => $request->nama,
+            'level_id' => $request->level_id,
+        ];
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+
+        $user->update($data);
 
         return redirect('/user')->with('success', 'Data user berhasil diubah');
     }
@@ -239,7 +245,7 @@ public function store_ajax(Request $request) {
     if($request->ajax() || $request->wantsJson()){
         $rules = [
             'level_id' => 'required|integer|exists:m_level,level_id',
-            'username' => 'required|string|min:3|unique:m_user,username',
+            'username' => 'required|string|min:3|max:20|unique:m_user,username',
             'nama' => 'required|string|max:100',
             'password' => 'required|min:6'
         ];
