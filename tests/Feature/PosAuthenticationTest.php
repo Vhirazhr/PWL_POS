@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\LevelModel;
 use App\Models\UserModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class PosAuthenticationTest extends TestCase
@@ -114,6 +116,59 @@ class PosAuthenticationTest extends TestCase
         ] as $path) {
             $this->get($path)->assertOk();
         }
+    }
+
+
+    public function test_profile_image_supports_legacy_public_upload_paths(): void
+    {
+        $relativePath = 'uploads/profile/profile-test-'.uniqid().'.png';
+        $absolutePath = public_path($relativePath);
+
+        if (!is_dir(dirname($absolutePath))) {
+            mkdir(dirname($absolutePath), 0755, true);
+        }
+
+        file_put_contents($absolutePath, 'legacy-profile-image');
+
+        try {
+            $user = new UserModel(['image' => $relativePath]);
+
+            $this->assertSame(asset($relativePath), $user->image);
+        } finally {
+            @unlink($absolutePath);
+        }
+    }
+
+    public function test_profile_image_uses_public_storage_for_new_uploads(): void
+    {
+        Storage::fake('public');
+        $path = 'uploads/profile/new-profile.png';
+        Storage::disk('public')->put($path, 'profile-image');
+
+        $user = new UserModel(['image' => $path]);
+
+        $this->assertSame(Storage::disk('public')->url($path), $user->image);
+    }
+
+    public function test_user_can_upload_and_display_a_profile_photo(): void
+    {
+        Storage::fake('public');
+        $user = $this->createTestUser();
+        $photo = UploadedFile::fake()->image('profile.png');
+
+        $this->actingAs($user, 'web')
+            ->put(route('profile.update'), [
+                'nama' => 'Administrator Test',
+                'image' => $photo,
+            ])
+            ->assertRedirect(route('profile'));
+
+        $path = 'uploads/profile/'.$photo->hashName();
+        Storage::disk('public')->assertExists($path);
+
+        $this->get(route('profile'))
+            ->assertOk()
+            ->assertSee(Storage::disk('public')->url($path));
     }
 
     public function test_public_home_displays_landing_page_for_guests(): void
