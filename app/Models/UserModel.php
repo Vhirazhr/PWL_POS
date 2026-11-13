@@ -26,7 +26,13 @@ class UserModel extends Authenticatable implements JWTSubject
     protected $table = 'm_user'; // Mendefinisikan nama tabel yang digunakan oleh model ini
     protected $primaryKey = 'user_id'; // Mendefinisikan primary key dari tabel yang digunakan
 
-    protected $fillable = ['level_id', 'username', 'nama', 'password','image'];
+    protected $fillable = ['level_id', 'username', 'nama', 'password', 'image'];
+
+    protected $hidden = ['password', 'remember_token'];
+
+    protected $casts = [
+        'password' => 'hashed',
+    ];
 
     public function level(){
         return $this->belongsTo(LevelModel::class, 'level_id', 'level_id');
@@ -35,7 +41,7 @@ class UserModel extends Authenticatable implements JWTSubject
     protected function image(): Attribute
 {
     return Attribute::make(
-    get: fn ($image) => url('/storage/posts/' . $image),
+    get: fn ($image) => $image ? \Illuminate\Support\Facades\Storage::disk('public')->url($image) : null,
     );
 }
 
